@@ -27,18 +27,14 @@ defmodule Forth do
 
   defp tokenize(s) do
     String.split(s, ~r/[\x{0000}\x{0001} \s\p{Zs}]+/u)
-    #|> IO.inspect(label: "Tokens")
   end
 
   defp do_eval(evaluator, []) do
     evaluator
   end
   defp do_eval(%{words: words} = ev, [token | tokens]) do
-    #IO.puts("Stack: #{Forth.format_stack(evaluator)} :: Token: #{token}")
     normalized_token = String.downcase(token)
 
-    #IO.inspect(ev, label: "Evaluator")
-    #IO.inspect([token | tokens], label: "Tokens")
     if Map.has_key?(words, normalized_token) do
       do_eval(ev, Map.fetch!(words, normalized_token) ++ tokens)
     else 
@@ -130,9 +126,10 @@ defmodule Forth do
       ArgumentError -> :ok
     end
 
+    [_separator | remaining_tokens] = rest
+
     new_words = Map.put(words, word, definition)
-    #IO.puts("Defining \"#{hd(sequence)}\" as \"#{IO.inspect(tl(sequence))}\"")
-    {%{ev | words: new_words}, tl(rest)}
+    {%{ev | words: new_words}, remaining_tokens}
   end
 
   @doc """
