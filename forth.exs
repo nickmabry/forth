@@ -1,7 +1,8 @@
 defmodule Forth do
-  @opaque evaluator :: any
+  @opaque evaluator :: Forth.Evaluator.t
 
   defmodule Evaluator do
+    @type t :: __MODULE__
     defstruct stack: [],
               words: %{}
   end
@@ -25,7 +26,7 @@ defmodule Forth do
   end
 
   defp tokenize(s) do
-    String.split(s, ~r/[^[:alnum:]\+\-\*\/\:\;]+/u)
+    String.split(s, ~r/[\x{0000}\x{0001} \s\p{Zs}]+/u)
     #|> IO.inspect(label: "Tokens")
   end
 
@@ -109,12 +110,27 @@ defmodule Forth do
   end
 
   defp eval_push(%{stack: stack} = ev, tokens, token) do
+    try do
+      String.to_integer(token)
+    rescue
+      ArgumentError -> raise Forth.UnknownWord, word: token
+    end
     {%{ev | stack: [String.to_integer(token) | stack]}, tokens}
   end
 
   defp eval_def(%{words: words} = ev, tokens) do
     {sequence, rest} = Enum.split_while(tokens, fn(token) -> token != ";" end)
-    new_words = Map.put(words, hd(sequence), tl(sequence))
+
+    [word | definition] = sequence
+
+    try do
+      _ = String.to_integer(word)
+      raise Forth.InvalidWord, word: word
+    rescue
+      ArgumentError -> :ok
+    end
+
+    new_words = Map.put(words, word, definition)
     #IO.puts("Defining \"#{hd(sequence)}\" as \"#{IO.inspect(tl(sequence))}\"")
     {%{ev | words: new_words}, tl(rest)}
   end
