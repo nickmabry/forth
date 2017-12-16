@@ -1,8 +1,14 @@
 defmodule Forth do
+  @moduledoc false
+
+  @whitespace_regex ~r/[\x{0000}\x{0001} \s\p{Zs}]+/u
+
   @opaque evaluator :: Forth.Evaluator.t
 
   defmodule Evaluator do
-    @type t :: __MODULE__
+    @moduledoc false
+
+    @opaque t :: __MODULE__
     defstruct stack: [],
               words: %{}
   end
@@ -26,7 +32,7 @@ defmodule Forth do
   end
 
   defp tokenize(s) do
-    String.split(s, ~r/[\x{0000}\x{0001} \s\p{Zs}]+/u)
+    String.split(s, @whitespace_regex)
   end
 
   defp do_eval(evaluator, []) do
