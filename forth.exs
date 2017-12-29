@@ -32,19 +32,19 @@ defmodule Forth do
   end
 
   defp tokenize(s) do
-    String.split(s, @whitespace_regex)
+    s
+    |> String.split(@whitespace_regex)
+    |> Enum.map(&String.downcase/1)
   end
 
   defp do_eval(evaluator, []) do
     evaluator
   end
   defp do_eval(%{words: words} = ev, [token | tokens]) do
-    normalized_token = String.downcase(token)
-
-    if Map.has_key?(words, normalized_token) do
-      do_eval(ev, Map.fetch!(words, normalized_token) ++ tokens)
+    if Map.has_key?(words, token) do
+      do_eval(ev, Map.fetch!(words, token) ++ tokens)
     else 
-      {next_evaluator, next_tokens} = case normalized_token do
+      {next_evaluator, next_tokens} = case token do
         "+" -> eval_add(ev, tokens)
         "-" -> eval_sub(ev, tokens)
         "*" -> eval_mul(ev, tokens)
@@ -54,7 +54,7 @@ defmodule Forth do
         "drop" -> eval_drop(ev, tokens)
         "swap" -> eval_swap(ev, tokens)
         "over" -> eval_over(ev, tokens)
-        _   -> eval_push(ev, tokens, normalized_token)
+        _   -> eval_push(ev, tokens, token)
       end
       do_eval(next_evaluator, next_tokens)
     end
