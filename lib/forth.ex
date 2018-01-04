@@ -37,9 +37,8 @@ defmodule Forth do
     |> Enum.map(&String.downcase/1)
   end
 
-  defp do_eval(evaluator, []) do
-    evaluator
-  end
+  defp do_eval(evaluator, []), do: evaluator
+  defp do_eval(evaluator, [""]), do: evaluator
   defp do_eval(%{words: words} = ev, [token | tokens]) do
     if Map.has_key?(words, token) do
       do_eval(ev, Map.fetch!(words, token) ++ tokens)
